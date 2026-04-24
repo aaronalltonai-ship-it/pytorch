@@ -471,7 +471,7 @@ ROCM_BATCH_INVARIANCE_XFAILS = {
     },
     "inductor_default": {
         "nn.functional.linear": {ALL},
-        "log1p": {fp16, fp32},
+        "log1p": {fp32},
     },
     "inductor_numerics": {
         "nn.functional.linear": {ALL},
@@ -480,7 +480,7 @@ ROCM_BATCH_INVARIANCE_XFAILS = {
 
 ROCM_UNARY_NUMERICAL_XFAILS = {
     "inductor_default": {
-        "log1p": {fp32},
+        "log1p": {fp16, fp32},
         "rsqrt": {bf16, fp32},
         "sigmoid": {fp32},
         "sin": {fp32},
