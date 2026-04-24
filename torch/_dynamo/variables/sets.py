@@ -58,8 +58,6 @@ class SetVariable(VariableTracker):
         **kwargs: Any,
     ) -> None:
         # .clone() passes these arguments in kwargs but they're recreated below
-        if "original_items" in kwargs:
-            kwargs.pop("original_items")
         if "should_reconstruct_all" in kwargs:
             kwargs.pop("should_reconstruct_all")
 
@@ -77,12 +75,11 @@ class SetVariable(VariableTracker):
                 # VariableTracker - realize to install guards, then wrap
                 # pyrefly: ignore [bad-argument-type]
                 hashable_items.append(HashableTracker(item.realize()))
+        # Internal representation as dict allows for simple integration with
+        # OrderedSet, notably polyfills. Using set moves complexity to OrderedSet
         self.items = dict.fromkeys(hashable_items, SetVariable._default_value())
         self.should_reconstruct_all = (
             not is_from_local_source(self.source) if self.source else True
-        )
-        self.original_items = dict.fromkeys(
-            hashable_items, SetVariable._default_value()
         )
 
     def debug_repr(self) -> str:
@@ -123,27 +120,10 @@ class SetVariable(VariableTracker):
         if not is_hashable(vt):
             return False
         key = HashableTracker(vt)
-        return key in self.items and not isinstance(
-            self.items[key], variables.DeletedVariable
-        )
-
-    def len(self) -> int:
-        return sum(
-            not isinstance(x, variables.DeletedVariable) for x in self.items.values()
-        )
+        return key in self.items
 
     def has_new_items(self) -> bool:
-        return self.should_reconstruct_all or any(
-            self.is_new_item(self.original_items.get(key.vt), value)
-            for key, value in self.items.items()
-        )
-
-    def is_new_item(
-        self, value: VariableTracker | None, other: VariableTracker
-    ) -> bool:
-        if value and value.is_realized() and other.is_realized():
-            return id(value.realize()) != id(other.realize())
-        return id(value) != id(other)
+        return self.should_reconstruct_all
 
     def unpack_var_sequence(self, tx: "InstructionTranslator") -> list[VariableTracker]:
         return [x.vt for x in self.items]
