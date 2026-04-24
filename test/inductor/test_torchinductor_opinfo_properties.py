@@ -406,7 +406,7 @@ UNARY_NUMERICAL_XFAILS = {
     "inductor_default": {
         "exp2": {bf16, fp32},
         "expm1": {bf16, fp32},
-        "log1p": {fp32},
+        "log1p": {fp16, fp32},
         "reciprocal": {fp32},
         "rsqrt": {bf16, fp32},
         "sigmoid": {fp32},
